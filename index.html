@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>台灣歌手 Google Trends · Plotly 互動折線圖（Vercel 版修正版）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Plotly from CDN：部署到 Vercel 後即可正常載入 -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      line-height: 1.6;
+    }
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 1.5rem;
+    }
+    .eyebrow {
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 0.4rem;
+    }
+    h1 {
+      font-size: 2.2rem;
+      margin: 0 0 0.6rem;
+    }
+    .sub {
+      font-size: 0.95rem;
+      color: #9ca3af;
+    }
+    .hero {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1.5rem 1.5rem;
+    }
+    .chart-card {
+      background: radial-gradient(circle at top, #0f172a 0, #020617 60%);
+      border-radius: 1.5rem;
+      padding: 1rem 1.25rem 1.25rem;
+      border: 1px solid #1f2937;
+    }
+    #chart {
+      width: 100%;
+      height: 420px;
+    }
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-radius: 999px;
+      border: 1px solid #334155;
+      background: #020617;
+      color: #e5e7eb;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .chip.active {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: #020617;
+      font-weight: 600;
+    }
+    .chip-swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+    }
+    .chart-meta {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 0.5rem;
+    }
+    .main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1.5rem 2.5rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.3fr);
+      gap: 1.75rem;
+    }
+    @media (max-width: 900px) {
+      .main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .story-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .story-card {
+      background: #020617;
+      border-radius: 1rem;
+      border: 1px solid #1f2937;
+      padding: 1rem 1.15rem;
+      font-size: 0.95rem;
+    }
+    .story-tag {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #9ca3af;
+      margin-bottom: 0.25rem;
+    }
+    .story-card h2 {
+      margin: 0.1rem 0 0.5rem;
+      font-size: 1.25rem;
+    }
+    .side-col {
+      font-size: 0.9rem;
+    }
+    .side-title {
+      margin: 0 0 0.3rem;
+      font-size: 1.25rem;
+    }
+    .side-sub {
+      margin: 0 0 0.7rem;
+      color: #9ca3af;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .stat-card {
+      background: #020617;
+      border-radius: 0.9rem;
+      border: 1px solid #1f2937;
+      padding: 0.65rem 0.8rem;
+    }
+    .stat-name {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      margin-bottom: 0.2rem;
+    }
+    .stat-swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+    }
+    .stat-value {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .stat-meta {
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+    footer {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1.5rem 2rem;
+      font-size: 0.78rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <p class="eyebrow">PLOTLY INTERACTIVE · VERCEL READY</p>
+      <h1>誰在一年之內最紅？五位台灣歌手的 Google Trends 熱度比較</h1>
+      <p class="sub">
+        這個版本專門設計給 Vercel 部署使用，透過 CDN 載入 Plotly，呈現可互動的折線圖。
+        與離線 SVG 版相對應，你可以在課堂上比較「無外部庫」與「使用繪圖套件」兩種做法。
+      </p>
+    </header>
+
+    <section class="hero">
+      <div class="chart-card">
+        <div id="chart"></div>
+        <div class="chip-row" id="chipRow"></div>
+        <p class="chart-meta">
+          每一條線代表該歌手在台灣的相對搜尋熱度（0–100）。點選下方圓角按鈕可以個別開關歌手線條。
+          在 Vercel 上，這個頁面會透過 CDN 自動載入 Plotly。
+        </p>
+      </div>
+    </section>
+
+    <main class="main">
+      <section class="story-col">
+        <article class="story-card">
+          <p class="story-tag">導讀</p>
+          <h2>從「誰一直紅」到「誰突然紅」</h2>
+          <p>
+            周杰倫的曲線在全年維持相對高位，代表長期穩定的關注度；
+            告五人與其他樂團、創作歌手則出現較明顯的爬坡與局部高點，
+            這些高點往往對應到專輯發行、戲劇插曲或演唱會。
+          </p>
+        </article>
+        <article class="story-card">
+          <p class="story-tag">教學應用</p>
+          <h2>同一份資料，兩種呈現方式</h2>
+          <p>
+            你可以搭配離線 SVG 版一起使用：先讓學生下載離線檔，理解圖形其實就是一堆線條；
+            再展示這個 Plotly 版，討論資料視覺化套件如何幫助我們在更短時間內完成互動作品。
+          </p>
+        </article>
+      </section>
+
+      <aside class="side-col">
+        <h2 class="side-title">誰在何時到達高峰？</h2>
+        <p class="side-sub">
+          這裡列出每位歌手在這一年中 Google Trends 的最高熱度值與週期。
+        </p>
+        <div class="stat-grid" id="statGrid"></div>
+      </aside>
+    </main>
+
+    <footer>
+      這是一個示範用的 Plotly 單檔 HTML。將檔案命名為 <code>index.html</code> 後上傳到 Vercel，
+      即可成為一個可分享的互動網頁。
+    </footer>
+  </div>
+
+  <script>
+    // --- 資料部分：直接從 Excel 轉出的 JSON ---
+    const trendsData = [{"date": "2022-05-01", "周杰倫": 37, "告五人": 7, "周興哲": 6, "茄子蛋": 5, "韋禮安": 14}, {"date": "2022-05-08", "周杰倫": 31, "告五人": 8, "周興哲": 9, "茄子蛋": 4, "韋禮安": 14}, {"date": "2022-05-15", "周杰倫": 32, "告五人": 6, "周興哲": 7, "茄子蛋": 5, "韋禮安": 7}, {"date": "2022-05-22", "周杰倫": 31, "告五人": 7, "周興哲": 7, "茄子蛋": 5, "韋禮安": 7}, {"date": "2022-05-29", "周杰倫": 28, "告五人": 5, "周興哲": 6, "茄子蛋": 5, "韋禮安": 9}, {"date": "2022-06-05", "周杰倫": 24, "告五人": 5, "周興哲": 6, "茄子蛋": 4, "韋禮安": 5}, {"date": "2022-06-12", "周杰倫": 27, "告五人": 5, "周興哲": 11, "茄子蛋": 4, "韋禮安": 3}, {"date": "2022-06-19", "周杰倫": 32, "告五人": 5, "周興哲": 8, "茄子蛋": 4, "韋禮安": 6}, {"date": "2022-06-26", "周杰倫": 38, "告五人": 6, "周興哲": 9, "茄子蛋": 11, "韋禮安": 13}, {"date": "2022-07-03", "周杰倫": 97, "告五人": 5, "周興哲": 7, "茄子蛋": 15, "韋禮安": 13}, {"date": "2022-07-10", "周杰倫": 100, "告五人": 6, "周興哲": 7, "茄子蛋": 5, "韋禮安": 5}, {"date": "2022-07-17", "周杰倫": 61, "告五人": 5, "周興哲": 11, "茄子蛋": 4, "韋禮安": 5}, {"date": "2022-07-24", "周杰倫": 51, "告五人": 5, "周興哲": 10, "茄子蛋": 6, "韋禮安": 4}, {"date": "2022-07-31", "周杰倫": 43, "告五人": 6, "周興哲": 11, "茄子蛋": 4, "韋禮安": 4}, {"date": "2022-08-07", "周杰倫": 40, "告五人": 6, "周興哲": 16, "茄子蛋": 5, "韋禮安": 4}, {"date": "2022-08-14", "周杰倫": 43, "告五人": 7, "周興哲": 11, "茄子蛋": 6, "韋禮安": 6}, {"date": "2022-08-21", "周杰倫": 34, "告五人": 10, "周興哲": 8, "茄子蛋": 5, "韋禮安": 6}, {"date": "2022-08-28", "周杰倫": 42, "告五人": 9, "周興哲": 10, "茄子蛋": 5, "韋禮安": 5}, {"date": "2022-09-04", "周杰倫": 38, "告五人": 7, "周興哲": 6, "茄子蛋": 4, "韋禮安": 17}, {"date": "2022-09-11", "周杰倫": 34, "告五人": 12, "周興哲": 10, "茄子蛋": 9, "韋禮安": 26}, {"date": "2022-09-18", "周杰倫": 27, "告五人": 11, "周興哲": 8, "茄子蛋": 5, "韋禮安": 6}, {"date": "2022-09-25", "周杰倫": 30, "告五人": 7, "周興哲": 10, "茄子蛋": 4, "韋禮安": 45}, {"date": "2022-10-02", "周杰倫": 31, "告五人": 9, "周興哲": 9, "茄子蛋": 4, "韋禮安": 10}, {"date": "2022-10-09", "周杰倫": 31, "告五人": 12, "周興哲": 53, "茄子蛋": 6, "韋禮安": 6}, {"date": "2022-10-16", "周杰倫": 35, "告五人": 14, "周興哲": 35, "茄子蛋": 8, "韋禮安": 5}, {"date": "2022-10-23", "周杰倫": 35, "告五人": 10, "周興哲": 33, "茄子蛋": 5, "韋禮安": 6}, {"date": "2022-10-30", "周杰倫": 29, "告五人": 15, "周興哲": 9, "茄子蛋": 6, "韋禮安": 2}, {"date": "2022-11-06", "周杰倫": 29, "告五人": 7, "周興哲": 7, "茄子蛋": 4, "韋禮安": 12}, {"date": "2022-11-13", "周杰倫": 32, "告五人": 10, "周興哲": 26, "茄子蛋": 3, "韋禮安": 6}, {"date": "2022-11-20", "周杰倫": 37, "告五人": 9, "周興哲": 21, "茄子蛋": 4, "韋禮安": 10}, {"date": "2022-11-27", "周杰倫": 25, "告五人": 7, "周興哲": 10, "茄子蛋": 3, "韋禮安": 6}, {"date": "2022-12-04", "周杰倫": 39, "告五人": 15, "周興哲": 8, "茄子蛋": 5, "韋禮安": 7}, {"date": "2022-12-11", "周杰倫": 29, "告五人": 13, "周興哲": 8, "茄子蛋": 4, "韋禮安": 6}, {"date": "2022-12-18", "周杰倫": 39, "告五人": 13, "周興哲": 7, "茄子蛋": 3, "韋禮安": 6}, {"date": "2022-12-25", "周杰倫": 34, "告五人": 34, "周興哲": 26, "茄子蛋": 10, "韋禮安": 14}, {"date": "2023-01-01", "周杰倫": 32, "告五人": 27, "周興哲": 16, "茄子蛋": 7, "韋禮安": 15}, {"date": "2023-01-08", "周杰倫": 32, "告五人": 18, "周興哲": 9, "茄子蛋": 5, "韋禮安": 3}, {"date": "2023-01-15", "周杰倫": 36, "告五人": 19, "周興哲": 5, "茄子蛋": 5, "韋禮安": 7}, {"date": "2023-01-22", "周杰倫": 32, "告五人": 20, "周興哲": 11, "茄子蛋": 9, "韋禮安": 7}, {"date": "2023-01-29", "周杰倫": 26, "告五人": 21, "周興哲": 6, "茄子蛋": 3, "韋禮安": 4}, {"date": "2023-02-05", "周杰倫": 33, "告五人": 43, "周興哲": 6, "茄子蛋": 2, "韋禮安": 4}, {"date": "2023-02-12", "周杰倫": 31, "告五人": 47, "周興哲": 7, "茄子蛋": 4, "韋禮安": 5}, {"date": "2023-02-19", "周杰倫": 28, "告五人": 18, "周興哲": 7, "茄子蛋": 2, "韋禮安": 2}, {"date": "2023-02-26", "周杰倫": 33, "告五人": 16, "周興哲": 11, "茄子蛋": 4, "韋禮安": 5}, {"date": "2023-03-05", "周杰倫": 32, "告五人": 16, "周興哲": 8, "茄子蛋": 4, "韋禮安": 4}, {"date": "2023-03-12", "周杰倫": 24, "告五人": 15, "周興哲": 5, "茄子蛋": 41, "韋禮安": 3}, {"date": "2023-03-19", "周杰倫": 31, "告五人": 35, "周興哲": 5, "茄子蛋": 7, "韋禮安": 6}, {"date": "2023-03-26", "周杰倫": 41, "告五人": 25, "周興哲": 25, "茄子蛋": 7, "韋禮安": 3}, {"date": "2023-04-02", "周杰倫": 33, "告五人": 44, "周興哲": 11, "茄子蛋": 7, "韋禮安": 1}, {"date": "2023-04-09", "周杰倫": 31, "告五人": 38, "周興哲": 8, "茄子蛋": 6, "韋禮安": 2}, {"date": "2023-04-16", "周杰倫": 27, "告五人": 11, "周興哲": 9, "茄子蛋": 7, "韋禮安": 3}, {"date": "2023-04-23", "周杰倫": 40, "告五人": 16, "周興哲": 3, "茄子蛋": 9, "韋禮安": 4}];
+
+    // --- 顏色與歌手清單 ---
+    const artistColors = {
+      "周杰倫": "#f97316",
+      "告五人": "#22c55e",
+      "周興哲": "#38bdf8",
+      "茄子蛋": "#e879f9",
+      "韋禮安": "#facc15"
+    };
+    const artists = Object.keys(artistColors);
+    let visibleArtists = new Set(artists);
+
+    function buildTraces() {
+      const x = trendsData.map(d => d.date);
+      return artists.map(name => {
+        const isOn = visibleArtists.has(name);
+        return {
+          x,
+          y: trendsData.map(d => d[name]),
+          mode: 'lines',
+          name,
+          line: {
+            width: isOn ? 3 : 1.5,
+            color: artistColors[name]
+          },
+          opacity: isOn ? 1 : 0.25
+        };
+      });
+    }
+
+    function renderChart() {
+      const traces = buildTraces();
+      const layout = {
+        paper_bgcolor: '#020617',
+        plot_bgcolor: '#020617',
+        margin: { t: 24, r: 16, b: 48, l: 48 },
+        xaxis: {
+          title: '',
+          tickfont: { color: '#e5e7eb', size: 10 },
+          gridcolor: '#1f2937'
+        },
+        yaxis: {
+          title: '搜尋熱度（0–100）',
+          tickfont: { color: '#e5e7eb', size: 10 },
+          gridcolor: '#1f2937',
+          rangemode: 'tozero'
+        },
+        legend: {
+          font: { color: '#e5e7eb', size: 10 }
+        },
+        hovermode: 'x unified',
+        hoverlabel: {
+          bgcolor: '#020617',
+          bordercolor: '#4b5563',
+          font: { color: '#e5e7eb', size: 11 }
+        }
+      };
+      const config = {
+        responsive: true,
+        displaylogo: false,
+        modeBarButtonsToRemove: ['select2d', 'lasso2d']
+      };
+      Plotly.react('chart', traces, layout, config);
+    }
+
+    function initChips() {
+      const row = document.getElementById('chipRow');
+      row.innerHTML = '';
+      artists.forEach(name => {
+        const btn = document.createElement('button');
+        btn.className = 'chip active';
+        btn.dataset.artist = name;
+
+        const sw = document.createElement('span');
+        sw.className = 'chip-swatch';
+        sw.style.backgroundColor = artistColors[name];
+
+        btn.appendChild(sw);
+        btn.appendChild(document.createTextNode(name));
+
+        btn.addEventListener('click', () => {
+          if (visibleArtists.has(name)) {
+            visibleArtists.delete(name);
+            btn.classList.remove('active');
+          } else {
+            visibleArtists.add(name);
+            btn.classList.add('active');
+          }
+          renderChart();
+        });
+
+        row.appendChild(btn);
+      });
+    }
+
+    function initStats() {
+      const grid = document.getElementById('statGrid');
+      grid.innerHTML = '';
+      artists.forEach(name => {
+        let maxVal = -Infinity;
+        let maxDate = null;
+        trendsData.forEach(d => {
+          if (d[name] > maxVal) {
+            maxVal = d[name];
+            maxDate = d.date;
+          }
+        });
+        const card = document.createElement('div');
+        card.className = 'stat-card';
+
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'stat-name';
+        const sw = document.createElement('span');
+        sw.className = 'stat-swatch';
+        sw.style.backgroundColor = artistColors[name];
+        nameDiv.appendChild(sw);
+        nameDiv.appendChild(document.createTextNode(name));
+
+        const valDiv = document.createElement('div');
+        valDiv.className = 'stat-value';
+        valDiv.textContent = maxVal;
+
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'stat-meta';
+        metaDiv.textContent = '最高點出現在 ' + maxDate;
+
+        card.appendChild(nameDiv);
+        card.appendChild(valDiv);
+        card.appendChild(metaDiv);
+
+        grid.appendChild(card);
+      });
+    }
+
+    window.addEventListener('load', () => {
+      initChips();
+      initStats();
+      renderChart();
+      window.addEventListener('resize', () => {
+        renderChart();
+      });
+    });
+  </script>
+</body>
+</html>
