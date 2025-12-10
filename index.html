@@ -177,18 +177,38 @@
       font-size: 0.78rem;
       color: #6b7280;
     }
+    .nav-button {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.8rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #4b5563;
+  background: #0b1120;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.nav-button:hover {
+  background: #1f2937;
+}
   </style>
 </head>
 <body>
   <div class="page">
     <header>
-      <p class="eyebrow">PLOTLY INTERACTIVE · VERCEL READY</p>
-      <h1>誰在一年之內最紅？五位台灣歌手的 Google Trends 熱度比較</h1>
-      <p class="sub">
-        這個版本專門設計給 Vercel 部署使用，透過 CDN 載入 Plotly，呈現可互動的折線圖。
-        與離線 SVG 版相對應，你可以在課堂上比較「無外部庫」與「使用繪圖套件」兩種做法。
-      </p>
-    </header>
+  <p class="eyebrow">PLOTLY INTERACTIVE · VERCEL READY</p>
+  <h1>誰在一年之內最紅？五位台灣歌手的 Google Trends 熱度比較</h1>
+  <p class="sub">
+    這個版本專門設計給 Vercel 部署使用，透過 CDN 載入 Plotly，呈現可互動的折線圖。
+    與離線 SVG 版相對應，你可以在課堂上比較「無外部庫」與「使用繪圖套件」兩種做法。
+  </p>
+
+  <!-- 🔗 新增：連到單一歌手故事頁 -->
+  <a href="/singer.html" class="nav-button">
+    查看單一歌手故事頁 →
+  </a>
+</header>
 
     <section class="hero">
       <div class="chart-card">
