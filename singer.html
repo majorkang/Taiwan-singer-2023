@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>單一歌手焦點｜台灣歌手 Google Trends 故事頁</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+      line-height: 1.6;
+    }
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2.3rem 1.5rem 1.2rem;
+    }
+    a.back {
+      font-size: 0.8rem;
+      text-decoration: none;
+      color: #9ca3af;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 0.4rem;
+    }
+    a.back span {
+      font-size: 1rem;
+    }
+    .eyebrow {
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      margin-bottom: 0.4rem;
+    }
+    h1 {
+      font-size: 2.1rem;
+      margin: 0 0 0.4rem;
+    }
+    .subtitle {
+      font-size: 0.95rem;
+      color: #9ca3af;
+    }
+    .hero {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1.5rem 1.5rem;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(0, 1.2fr);
+      gap: 1.6rem;
+    }
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+    .chart-card {
+      background: radial-gradient(circle at top, #0f172a 0, #020617 60%);
+      border-radius: 1.5rem;
+      padding: 1rem 1.25rem 1.25rem;
+      border: 1px solid #1f2937;
+    }
+    #focus-chart {
+      width: 100%;
+      height: 420px;
+    }
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+    .select-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      background: #020617;
+      font-size: 0.85rem;
+      color: #e5e7eb;
+    }
+    .select-wrap label {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+    .select-wrap select {
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+    }
+    .select-wrap option {
+      color: #020617;
+    }
+    .pill {
+      border-radius: 999px;
+      border: 1px solid #374151;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .chart-meta {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 0.5rem;
+    }
+    .story-card {
+      background: #020617;
+      border-radius: 1.25rem;
+      border: 1px solid #1f2937;
+      padding: 1rem 1.2rem 1.1rem;
+      font-size: 0.95rem;
+    }
+    .story-tag {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #9ca3af;
+      margin-bottom: 0.25rem;
+    }
+    .story-card h2 {
+      margin: 0.1rem 0 0.5rem;
+      font-size: 1.3rem;
+    }
+    .event-list {
+      margin: 0.4rem 0 0;
+      padding-left: 1.1rem;
+      font-size: 0.88rem;
+      color: #d1d5db;
+    }
+    .event-list li {
+      margin-bottom: 0.25rem;
+    }
+    .event-list time {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-right: 0.25rem;
+    }
+    .legend {
+      margin-top: 0.6rem;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+    .legend span.color {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      margin-right: 0.25rem;
+      vertical-align: middle;
+    }
+    footer {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 1.5rem 2rem;
+      font-size: 0.78rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <a href="/" class="back"><span>←</span> 回到總覽頁</a>
+      <p class="eyebrow">FOCUS VIEW · SINGLE ARTIST</p>
+      <h1 id="title">周杰倫：一年搜尋熱度故事</h1>
+      <p class="subtitle">
+        在這一頁，我們從五位歌手中選出一位，專注觀察他的 Google Trends 曲線，搭配事件標註，
+        用接近資料新聞的方式講一個「歌手與時間」的故事。
+      </p>
+    </header>
+
+    <section class="hero">
+      <div class="layout">
+        <div class="chart-card">
+          <div class="control-row">
+            <div class="select-wrap">
+              <label for="artistSelect">選擇歌手</label>
+              <select id="artistSelect">
+                <option value="周杰倫">周杰倫</option>
+                <option value="告五人">告五人</option>
+                <option value="周興哲">周興哲</option>
+                <option value="茄子蛋">茄子蛋</option>
+                <option value="韋禮安">韋禮安</option>
+              </select>
+            </div>
+            <div class="pill" id="peakInfo">最高點：--</div>
+          </div>
+          <div id="focus-chart"></div>
+          <p class="chart-meta">
+            折線代表單一歌手在台灣的相對搜尋熱度（0–100）。
+            垂直虛線標出幾個重要週期，可以作為新聞時間軸或報導框架的起點。
+          </p>
+          <p class="legend">
+            <span class="color" id="legendColor"></span>
+            橘線：歌手搜尋熱度 · 灰虛線：事件標註
+          </p>
+        </div>
+
+        <article class="story-card">
+          <p class="story-tag">敘事區塊</p>
+          <h2 id="storyHeading">周杰倫：高原型熱度與幾個明顯高峰</h2>
+          <p id="storyText">
+            周杰倫的曲線大致維持在中高檔位，只有在少數幾個時間點突然衝高。
+            這些高點通常對應到新作品釋出、演唱會開賣或是社群話題，
+            代表他的關注度比較像是「持續存在的背景噪音」，而不是一陣一陣的爆紅。
+          </p>
+          <ul class="event-list" id="eventList"></ul>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      這是第二個示範頁面：同一份 Google Trends 資料，透過單一歌手視角與事件標註，
+      示範如何把折線圖變成一則可閱讀的故事。部署在與 <code>index.html</code> 相同的專案中，
+      透過 <code>/singer.html</code> 路徑存取。
+    </footer>
+  </div>
+
+  <script>
+    // 👉 這裡要貼上 index.html 裡的那段 trendsData JSON
+    // 待會請到 index.html 找到「const trendsData = [...]」整段複製過來
+    const trendsData = [{"date": "2022-05-01", "周杰倫": 37, "告五人": 7, "周興哲": 6, "茄子蛋": 5, "韋禮安": 14}, {"date": "2022-05-08", "周杰倫": 31, "告五人": 8, "周興哲": 9, "茄子蛋": 4, "韋禮安": 14}, {"date": "2022-05-15", "周杰倫": 32, "告五人": 6, "周興哲": 7, "茄子蛋": 5, "韋禮安": 7}, {"date": "2022-05-22", "周杰倫": 31, "告五人": 7, "周興哲": 7, "茄子蛋": 5, "韋禮安": 7}, {"date": "2022-05-29", "周杰倫": 28, "告五人": 5, "周興哲": 6, "茄子蛋": 5, "韋禮安": 9}, {"date": "2022-06-05", "周杰倫": 24, "告五人": 5, "周興哲": 6, "茄子蛋": 4, "韋禮安": 5}, {"date": "2022-06-12", "周杰倫": 27, "告五人": 5, "周興哲": 11, "茄子蛋": 4, "韋禮安": 3}, {"date": "2022-06-19", "周杰倫": 32, "告五人": 5, "周興哲": 8, "茄子蛋": 4, "韋禮安": 6}, {"date": "2022-06-26", "周杰倫": 38, "告五人": 6, "周興哲": 9, "茄子蛋": 11, "韋禮安": 13}, {"date": "2022-07-03", "周杰倫": 97, "告五人": 5, "周興哲": 7, "茄子蛋": 15, "韋禮安": 13}, {"date": "2022-07-10", "周杰倫": 100, "告五人": 6, "周興哲": 7, "茄子蛋": 5, "韋禮安": 5}, {"date": "2022-07-17", "周杰倫": 61, "告五人": 5, "周興哲": 11, "茄子蛋": 4, "韋禮安": 5}, {"date": "2022-07-24", "周杰倫": 51, "告五人": 5, "周興哲": 10, "茄子蛋": 6, "韋禮安": 4}, {"date": "2022-07-31", "周杰倫": 43, "告五人": 6, "周興哲": 11, "茄子蛋": 4, "韋禮安": 4}, {"date": "2022-08-07", "周杰倫": 40, "告五人": 6, "周興哲": 16, "茄子蛋": 5, "韋禮安": 4}, {"date": "2022-08-14", "周杰倫": 43, "告五人": 7, "周興哲": 11, "茄子蛋": 6, "韋禮安": 6}, {"date": "2022-08-21", "周杰倫": 34, "告五人": 10, "周興哲": 8, "茄子蛋": 5, "韋禮安": 6}, {"date": "2022-08-28", "周杰倫": 42, "告五人": 9, "周興哲": 10, "茄子蛋": 5, "韋禮安": 5}, {"date": "2022-09-04", "周杰倫": 38, "告五人": 7, "周興哲": 6, "茄子蛋": 4, "韋禮安": 17}, {"date": "2022-09-11", "周杰倫": 34, "告五人": 12, "周興哲": 10, "茄子蛋": 9, "韋禮安": 26}, {"date": "2022-09-18", "周杰倫": 27, "告五人": 11, "周興哲": 8, "茄子蛋": 5, "韋禮安": 6}, {"date": "2022-09-25", "周杰倫": 30, "告五人": 7, "周興哲": 10, "茄子蛋": 4, "韋禮安": 45}, {"date": "2022-10-02", "周杰倫": 31, "告五人": 9, "周興哲": 9, "茄子蛋": 4, "韋禮安": 10}, {"date": "2022-10-09", "周杰倫": 31, "告五人": 12, "周興哲": 53, "茄子蛋": 6, "韋禮安": 6}, {"date": "2022-10-16", "周杰倫": 35, "告五人": 14, "周興哲": 35, "茄子蛋": 8, "韋禮安": 5}, {"date": "2022-10-23", "周杰倫": 35, "告五人": 10, "周興哲": 33, "茄子蛋": 5, "韋禮安": 6}, {"date": "2022-10-30", "周杰倫": 29, "告五人": 15, "周興哲": 9, "茄子蛋": 6, "韋禮安": 2}, {"date": "2022-11-06", "周杰倫": 29, "告五人": 7, "周興哲": 7, "茄子蛋": 4, "韋禮安": 12}, {"date": "2022-11-13", "周杰倫": 32, "告五人": 10, "周興哲": 26, "茄子蛋": 3, "韋禮安": 6}, {"date": "2022-11-20", "周杰倫": 37, "告五人": 9, "周興哲": 21, "茄子蛋": 4, "韋禮安": 10}, {"date": "2022-11-27", "周杰倫": 25, "告五人": 7, "周興哲": 10, "茄子蛋": 3, "韋禮安": 6}, {"date": "2022-12-04", "周杰倫": 39, "告五人": 15, "周興哲": 8, "茄子蛋": 5, "韋禮安": 7}, {"date": "2022-12-11", "周杰倫": 29, "告五人": 13, "周興哲": 8, "茄子蛋": 4, "韋禮安": 6}, {"date": "2022-12-18", "周杰倫": 39, "告五人": 13, "周興哲": 7, "茄子蛋": 3, "韋禮安": 6}, {"date": "2022-12-25", "周杰倫": 34, "告五人": 34, "周興哲": 26, "茄子蛋": 10, "韋禮安": 14}, {"date": "2023-01-01", "周杰倫": 32, "告五人": 27, "周興哲": 16, "茄子蛋": 7, "韋禮安": 15}, {"date": "2023-01-08", "周杰倫": 32, "告五人": 18, "周興哲": 9, "茄子蛋": 5, "韋禮安": 3}, {"date": "2023-01-15", "周杰倫": 36, "告五人": 19, "周興哲": 5, "茄子蛋": 5, "韋禮安": 7}, {"date": "2023-01-22", "周杰倫": 32, "告五人": 20, "周興哲": 11, "茄子蛋": 9, "韋禮安": 7}, {"date": "2023-01-29", "周杰倫": 26, "告五人": 21, "周興哲": 6, "茄子蛋": 3, "韋禮安": 4}, {"date": "2023-02-05", "周杰倫": 33, "告五人": 43, "周興哲": 6, "茄子蛋": 2, "韋禮安": 4}, {"date": "2023-02-12", "周杰倫": 31, "告五人": 47, "周興哲": 7, "茄子蛋": 4, "韋禮安": 5}, {"date": "2023-02-19", "周杰倫": 28, "告五人": 18, "周興哲": 7, "茄子蛋": 2, "韋禮安": 2}, {"date": "2023-02-26", "周杰倫": 33, "告五人": 16, "周興哲": 11, "茄子蛋": 4, "韋禮安": 5}, {"date": "2023-03-05", "周杰倫": 32, "告五人": 16, "周興哲": 8, "茄子蛋": 4, "韋禮安": 4}, {"date": "2023-03-12", "周杰倫": 24, "告五人": 15, "周興哲": 5, "茄子蛋": 41, "韋禮安": 3}, {"date": "2023-03-19", "周杰倫": 31, "告五人": 35, "周興哲": 5, "茄子蛋": 7, "韋禮安": 6}, {"date": "2023-03-26", "周杰倫": 41, "告五人": 25, "周興哲": 25, "茄子蛋": 7, "韋禮安": 3}, {"date": "2023-04-02", "周杰倫": 33, "告五人": 44, "周興哲": 11, "茄子蛋": 7, "韋禮安": 1}, {"date": "2023-04-09", "周杰倫": 31, "告五人": 38, "周興哲": 8, "茄子蛋": 6, "韋禮安": 2}, {"date": "2023-04-16", "周杰倫": 27, "告五人": 11, "周興哲": 9, "茄子蛋": 7, "韋禮安": 3}, {"date": "2023-04-23", "周杰倫": 40, "告五人": 16, "周興哲": 3, "茄子蛋": 9, "韋禮安": 4}];
+;
+
+    const artistColors = {
+      "周杰倫": "#fb923c",
+      "告五人": "#22c55e",
+      "周興哲": "#38bdf8",
+      "茄子蛋": "#e879f9",
+      "韋禮安": "#facc15"
+    };
+
+    // 示意事件（你之後可以改成真實事件）
+    const artistEvents = {
+      "周杰倫": [
+        { date: "2022-07-08", label: "新專輯話題高峰（示意）" },
+        { date: "2022-12-24", label: "跨年演唱會相關討論（示意）" }
+      ],
+      "告五人": [
+        { date: "2022-10-01", label: "歌曲成為戲劇插曲，引發搜尋（示意）" },
+        { date: "2023-03-01", label: "大型演唱會或頒獎典禮曝光（示意）" }
+      ],
+      "周興哲": [
+        { date: "2022-09-15", label: "抒情單曲上架帶動熱度（示意）" }
+      ],
+      "茄子蛋": [
+        { date: "2022-08-20", label: "巡迴演唱或音樂祭演出（示意）" }
+      ],
+      "韋禮安": [
+        { date: "2023-01-10", label: "新專輯或合作單曲曝光（示意）" }
+      ]
+    };
+
+    const artistStories = {
+      "周杰倫": {
+        heading: "周杰倫：高原型熱度與幾個明顯高峰",
+        text: "周杰倫的搜尋熱度長期維持在一個中高檔位，只有在新作品、演唱會或媒體事件時出現特別尖銳的高點。這種「高原＋峰值」的型態，代表他在華語樂壇的存在幾乎是常態背景，只是在特定事件時被再次放大。"
+      },
+      "告五人": {
+        heading: "告五人：從「被注意」到「變成主流」的斜率故事",
+        text: "告五人的曲線在前半段相對平穩，但在某些時間點之後斜率變大，出現明顯的成長與高峰。這些高峰常常對應到戲劇插曲、廣告合作或是巡演，呈現出一種典型的『樂團竄紅』軌跡。"
+      },
+      "周興哲": {
+        heading: "周興哲：抒情單曲推動的「情歌型」高峰",
+        text: "周興哲的熱度多半集中在單曲宣傳期，當新歌上架或 MV 推出時，曲線會出現一段明顯上升期與高峰，之後逐漸回落。這種樣態適合搭配歌詞內容、情歌情境，一起做敘事報導。"
+      },
+      "茄子蛋": {
+        heading: "茄子蛋：現場演出與地方活動帶動的局部高點",
+        text: "茄子蛋的線條在平常維持低位，但在特定週期會突然被拉高，多半與音樂祭、校園演唱或地方活動有關。這樣的曲線可以和地圖、場地資料搭配，做成『巡迴足跡』的故事。"
+      },
+      "韋禮安": {
+        heading: "韋禮安：合作與專輯節奏牽動的波動曲線",
+        text: "韋禮安的熱度在合作單曲、專輯發行或節目露出時會出現多次中等高峰，整體起伏不算劇烈，但在特定時間仍有清楚波動。這樣的節奏適合與產業脈絡、不同平台曝光方式一起分析。"
+      }
+    };
+
+    function buildFocusTrace(artist) {
+      return {
+        x: trendsData.map(d => d.date),
+        y: trendsData.map(d => d[artist]),
+        name: artist,
+        mode: "lines",
+        line: {
+          color: artistColors[artist] || "#fb923c",
+          width: 3
+        }
+      };
+    }
+
+    function buildEventShapes(artist) {
+      const events = artistEvents[artist] || [];
+      return events.map(ev => ({
+        type: "line",
+        x0: ev.date,
+        x1: ev.date,
+        y0: 0,
+        y1: 1,
+        xref: "x",
+        yref: "paper",
+        line: {
+          color: "#9ca3af",
+          width: 1,
+          dash: "dot"
+        }
+      }));
+    }
+
+    function buildEventAnnotations(artist) {
+      const events = artistEvents[artist] || [];
+      return events.map(ev => ({
+        x: ev.date,
+        y: 1,
+        xref: "x",
+        yref: "paper",
+        yanchor: "bottom",
+        ay: -40,
+        ax: 0,
+        text: ev.label,
+        font: { size: 11, color: "#e5e7eb" },
+        bgcolor: "#020617",
+        bordercolor: "#4b5563",
+        borderwidth: 1
+      }));
+    }
+
+    function renderFocus(artist) {
+      const trace = buildFocusTrace(artist);
+      const shapes = buildEventShapes(artist);
+      const annotations = buildEventAnnotations(artist);
+
+      const layout = {
+        paper_bgcolor: "#020617",
+        plot_bgcolor: "#020617",
+        margin: { t: 16, r: 16, b: 48, l: 48 },
+        xaxis: {
+          title: "",
+          tickfont: { color: "#e5e7eb", size: 10 },
+          gridcolor: "#1f2937"
+        },
+        yaxis: {
+          title: "搜尋熱度（0–100）",
+          tickfont: { color: "#e5e7eb", size: 10 },
+          gridcolor: "#1f2937",
+          rangemode: "tozero"
+        },
+        shapes,
+        annotations,
+        hovermode: "x unified",
+        hoverlabel: {
+          bgcolor: "#020617",
+          bordercolor: "#4b5563",
+          font: { color: "#e5e7eb", size: 11 }
+        },
+        showlegend: false
+      };
+
+      const config = {
+        responsive: true,
+        displaylogo: false,
+        modeBarButtonsToRemove: ["select2d", "lasso2d"]
+      };
+
+      Plotly.react("focus-chart", [trace], layout, config);
+
+      const story = artistStories[artist];
+      if (story) {
+        document.getElementById("storyHeading").textContent = story.heading;
+        document.getElementById("storyText").textContent = story.text;
+      }
+
+      const list = document.getElementById("eventList");
+      list.innerHTML = "";
+      (artistEvents[artist] || []).forEach(ev => {
+        const li = document.createElement("li");
+        const time = document.createElement("time");
+        time.textContent = ev.date;
+        li.appendChild(time);
+        li.appendChild(document.createTextNode(" " + ev.label));
+        list.appendChild(li);
+      });
+
+      document.getElementById("title").textContent = artist + "：一年搜尋熱度故事";
+      document.getElementById("legendColor").style.backgroundColor =
+        artistColors[artist] || "#fb923c";
+
+      let maxVal = -Infinity;
+      let maxDate = null;
+      trendsData.forEach(d => {
+        if (d[artist] > maxVal) {
+          maxVal = d[artist];
+          maxDate = d.date;
+        }
+      });
+      document.getElementById("peakInfo").textContent =
+        "最高點：" + maxVal + "（" + maxDate + "）";
+    }
+
+    window.addEventListener("load", () => {
+      const select = document.getElementById("artistSelect");
+      select.addEventListener("change", () => {
+        renderFocus(select.value);
+      });
+      renderFocus(select.value);
+      window.addEventListener("resize", () => {
+        renderFocus(select.value);
+      });
+    });
+  </script>
+</body>
+</html>
